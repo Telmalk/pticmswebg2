@@ -52,7 +52,7 @@
         <?php
     }
 
-    function getData(array $data, string $currentPage) {
+    function getData(PDO $pdo, string $currentPage) {
         return $data[$currentPage] ?? null;
     }
 

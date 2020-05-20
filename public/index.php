@@ -6,15 +6,16 @@
 
      require_once APP_ROOT_DIR . "includes/function.php";
      require_once APP_ROOT_DIR . "includes/data.php";
+     require_once APP_ROOT_DIR . "includes/connect.php";
 
      $currentPage = $_GET[APP_PARAM_PAGE] ?? APP_DEFAULT_PAGE;
 
 
-     $dataPage = getData($data, $currentPage);
+     $dataPage = getData($pdo, $currentPage);
      if (is_null($dataPage)) {
         http_response_code(404);
         $currentPage = APP_DEFAULT_PAGE;
-        $dataPage = getData($data, $currentPage);
+        $dataPage = getData($pdo, $currentPage);
      }
      getHeader($data, $currentPage);
      getPage($dataPage);
