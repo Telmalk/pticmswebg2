@@ -1,5 +1,6 @@
 <?php
-    function getHeader(array $data, string $currentPage) {
+    function getHeader(PDO $pdo, string $currentPage) {
+        $data = getHeaderData($pdo);
         ?>
         <!DOCTYPE html>
         <html lang="fr">
@@ -15,8 +16,8 @@
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav mr-auto">
                                 <?php
-                                    foreach ($data as $slug => $value) {
-                                        getNavLink($slug, $value, $currentPage);
+                                    foreach ($data as $value) {
+                                        getNavLink($value, $currentPage);
                                     }
                                 ?>
                             </ul>
@@ -26,15 +27,34 @@
         <?php
     }
 
-    function getNavLink(string $slug, array $value, string $currentPage) {
+    function getHeaderData(PDO $pdo) {
+        $sql = "
+            SELECT
+                title,
+                slug
+            FROM
+                page;
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        errorHandler($stmt);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!$data) {
+            return null;
+        }
+        return $data;
+    }
+
+    function getNavLink(array $value, string $currentPage) {
         $classLink = "";
-        if ($slug === $currentPage) {
+        if ($value['slug'] === $currentPage) {
             $classLink = "class=active";
         }
 
         ?>
         <li <?=$classLink?>>
-            <a class="nav-link" href="<?=APP_URL?>?<?=APP_PARAM_PAGE?>=<?=$slug?>"><?=$value['title']?></a>
+            <a class="nav-link" href="<?=APP_URL?>?<?=APP_PARAM_PAGE?>=<?=$value['slug']?>"><?=$value['title']?></a>
         </li>
         <?php
     }
@@ -53,7 +73,29 @@
     }
 
     function getData(PDO $pdo, string $currentPage) {
-        return $data[$currentPage] ?? null;
+        $sql = "
+            SELECT
+                title,
+                description,
+                `span-text`,
+                `span-label`,
+                img,
+                `img-alt`
+            FROM
+                page
+            WHERE 
+                slug = :slug;   
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(":slug", $currentPage);
+        $stmt->execute();
+        errorHandler($stmt);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+         if (!$data) {
+             return null;
+         }
+         return $data;
     }
 
     function getFooter() {
@@ -61,4 +103,10 @@
         </body>
         </html>
         <?php
+    }
+
+    function errorHandler(PDOStatement $stmt) {
+        if ($stmt->errorCode() !== '00000') {
+            throw new PDOException($stmt->errorInfo()[2]);
+        }
     }

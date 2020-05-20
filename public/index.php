@@ -8,15 +8,20 @@
      require_once APP_ROOT_DIR . "includes/data.php";
      require_once APP_ROOT_DIR . "includes/connect.php";
 
-     $currentPage = $_GET[APP_PARAM_PAGE] ?? APP_DEFAULT_PAGE;
+try {
+    $currentPage = $_GET[APP_PARAM_PAGE] ?? APP_DEFAULT_PAGE;
 
-
-     $dataPage = getData($pdo, $currentPage);
-     if (is_null($dataPage)) {
+    $dataPage = getData($pdo, $currentPage);
+    if (is_null($dataPage)) {
         http_response_code(404);
         $currentPage = APP_DEFAULT_PAGE;
         $dataPage = getData($pdo, $currentPage);
-     }
-     getHeader($data, $currentPage);
-     getPage($dataPage);
-     getFooter();
+    }
+    getHeader($pdo, $currentPage);
+    getPage($dataPage);
+    getFooter();
+} catch (PDOException $e) {
+    die($e->getMessage());
+} catch (Exception $e) {
+    die($e->getMessage());
+}
